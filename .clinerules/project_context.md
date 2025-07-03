@@ -9,7 +9,7 @@ To build an intuitive web app where a user can input a URL, and the system will 
 
 ## Core Components and Workflows
 
-### 1. Frontend Web App (React)
+### 1. Frontend Framework (React + Next.js)
 - **Initial Page**: A simple text field for the user to input the URL to be analyzed.
 - **Scraping Initiation**: The scraping process is started via an API call.
 - **Real-time Monitoring Dashboard**:
