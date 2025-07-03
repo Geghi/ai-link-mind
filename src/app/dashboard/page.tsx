@@ -8,7 +8,6 @@ export default function DashboardPage() {
   const { urlEntries } = useUrlContext();
 
   const formatDate = (dateString: string | null) => {
-    console.log('Formatting date:', dateString);
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleString();
@@ -66,10 +65,10 @@ export default function DashboardPage() {
                       {entry.status}
                     </td>
                     <td className="py-3 px-4 text-gray-400">
-                      {formatDate(entry.createdAt)}
+                      {formatDate(entry.created_at)}
                     </td>
                     <td className="py-3 px-4 text-gray-400">
-                      {formatDate(entry.updatedAt)}
+                      {formatDate(entry.updated_at)}
                     </td>
                     <td className="py-3 px-4">
                       {entry.status === 'Completed' && (

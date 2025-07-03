@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  console.log("API route /api/start-analysis hit!");
   try {
     const { url, siteId } = await request.json(); // Accept siteId from frontend
 

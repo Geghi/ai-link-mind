@@ -5,6 +5,6 @@ export interface UrlEntry {
   task_id: string;
   url: string;
   status: UrlStatus;
-  createdAt: string;
-  updatedAt: string | null;
+  created_at: string;
+  updated_at: string | null;
 }

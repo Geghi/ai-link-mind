@@ -23,7 +23,6 @@ export const UrlProvider = ({ children }: { children: ReactNode }) => {
   const taskIdRef = useRef(currentTaskId);
   useEffect(() => {
     taskIdRef.current = currentTaskId;
-    console.log('[UrlContext] Task ID ref updated:', taskIdRef.current);
   }, [currentTaskId]);
 
   const addUrlEntry = useCallback((entry: UrlEntry) => {
@@ -47,7 +46,7 @@ export const UrlProvider = ({ children }: { children: ReactNode }) => {
 
   // This effect runs only once to set up a stable subscription
   useEffect(() => {
-    console.log('[UrlContext] Setting up STABLE subscription.');
+    console.log('[UrlContext] Setting up subscription.');
 
     const channel = subscribeToUrlChanges(
       (newEntry) => {
@@ -80,15 +79,9 @@ export const UrlProvider = ({ children }: { children: ReactNode }) => {
         }
       },
       (deletedEntry) => {
-        console.log('[UrlContext] Delete received:', deletedEntry);
-        const activeTaskId = taskIdRef.current;
-        if (!activeTaskId || deletedEntry.task_id === activeTaskId) {
           console.log('[UrlContext] Deleting entry:', deletedEntry);
           setUrlEntries((prev) => prev.filter(entry => entry.id !== deletedEntry.id));
-        } else {
-          console.log(`[UrlContext] Skipping delete. Active task: ${activeTaskId}, Entry task: ${deletedEntry.task_id}`);
         }
-      }
     );
 
     return () => {

@@ -8,7 +8,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const status = searchParams.get('status');
-    console.log('GET /api/scraped-pages/update-status called with:', { id, status });
     if (!id || !status) {
       return NextResponse.json({ error: 'id and status are required' }, { status: 400 });
     }
