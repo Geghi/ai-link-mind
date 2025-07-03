@@ -14,7 +14,7 @@ To build an intuitive web app where a user can input a URL, and the system will 
 - **Scraping Initiation**: The scraping process is started via an API call.
 - **Real-time Monitoring Dashboard**:
   - A list of discovered and analyzed pages with their current status (e.g., Queued, In Progress, Completed).
-  - Live updates are pushed to the frontend using WebSockets or Server-Sent Events (SSE).
+  - Live updates are pushed to the frontend directly from Supabase via its Realtime capabilities. The frontend subscribes to changes in the `url_entries` table, filtering by `task_id` to show only relevant URLs for the current analysis task.
 - **Chat Interface**: Displays all processed sites/URLs and allows the user to select one to open a chat to ask contextual questions for that website.
 
 ### 2. Backend API Server
@@ -81,7 +81,7 @@ Frontend: React, hosting su Cloudflare Pages
 Backend API: Python (FastAPI) con Azure Functions
 Coda messaggi: Apache Kafka auto-ospitato
 Archiviazione documenti: Cloudflare R2
-DB metadata: Supabase
+DB metadata: Supabase (used for real-time updates to the frontend via its Realtime feature, with an external service handling database writes for URL status changes)
 DB vettori: Pinecone
 Job di scraping: AWS Lambda (con Docker) o Azure Container
 Lavoratore job: AWS Lambda (serverless) per task brevi

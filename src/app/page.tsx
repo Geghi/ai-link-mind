@@ -6,16 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils"; // Import cn utility
 import { useUrlContext } from '@/lib/context/UrlContext'; // Import useUrlContext
+import { v4 as uuidv4 } from 'uuid';
 
 export default function Home() {
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState("https://mantovani-giacomo.com/");
   const router = useRouter();
-  const { addUrlEntry } = useUrlContext(); // Use the context
+  const { resetUrlEntries } = useUrlContext(); // Use the context
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url) return;
+    resetUrlEntries(); // Reset the URL context before adding a new URL
     console.log("Starting analysis for URL:", url);
+    const siteId = uuidv4(); // Generate a unique siteId for the new URL
     try {
       // Simulate API call to backend
       const response = await fetch("/api/start-analysis", {
@@ -23,7 +26,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, siteId }),
       });
 
       if (!response.ok) {
@@ -31,19 +34,13 @@ export default function Home() {
       }
 
       const data = await response.json();
-      const { siteId } = data;
+      console.log("Analysis started successfully:", data);
 
-      // Add the URL to the context
-      addUrlEntry({
-        id: siteId, // Assuming siteId can be used as the unique ID for UrlEntry
-        url,
-        status: 'Queued',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+      // Use the siteId from the API response if available, otherwise use the locally generated one
+      const finalSiteId = data.siteId || siteId;
 
       // Navigate to dashboard with the received siteId
-      router.push(`/dashboard?siteId=${siteId}`);
+      router.push(`/dashboard?siteId=${finalSiteId}`);
     } catch (error) {
       console.error("Error starting analysis:", error);
       alert("Failed to start analysis. Please try again.");
