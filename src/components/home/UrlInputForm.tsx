@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import { useUrlStoreActions } from '@/stores/urlStore';
+import { ArrowRight, LoaderCircle } from "lucide-react";
 
 interface UrlInputFormProps {
   onUrlSubmit: (url: string, task_id: string) => void;
@@ -24,7 +24,6 @@ export default function UrlInputForm({ onUrlSubmit }: UrlInputFormProps) {
     console.log("Submitting URL to create task:", url);
 
     try {
-      // Call the new API route to create a task and get the task_id
       const createTaskResponse = await fetch("/api/tasks/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -38,8 +37,6 @@ export default function UrlInputForm({ onUrlSubmit }: UrlInputFormProps) {
 
       const { task_id } = await createTaskResponse.json();
       console.log(`Task created with ID: ${task_id}`);
-
-      // Pass the URL and the generated task_id to the parent component's onUrlSubmit
       onUrlSubmit(url, task_id);
     } catch (error) {
       console.error("Error submitting URL:", error);
@@ -50,28 +47,35 @@ export default function UrlInputForm({ onUrlSubmit }: UrlInputFormProps) {
   };
 
   return (
-    <main className="w-full max-w-md animate-fade-in-up delay-400">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 bg-white/10 backdrop-blur-md p-6 rounded-xl border border-white/20 shadow-xl">
+    <section className="w-full max-w-xl animate-fade-in-up delay-400">
+      <form 
+        onSubmit={handleSubmit} 
+        className="relative flex flex-col gap-4 rounded-xl border bg-background/80 p-6 shadow-2xl shadow-primary/10 backdrop-blur-sm"
+      >
         <Input
           type="url"
           placeholder="Enter a URL to analyze (e.g., https://example.com)"
-          className="bg-white/5 border-white/30 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500"
+          className="h-12 bg-input text-lg placeholder:text-muted-foreground focus-visible:ring-ring focus-visible:ring-offset-0"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           required
+          disabled={loading}
         />
         <Button
           type="submit"
-          className={cn(
-            "bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-lg",
-            "hover:from-blue-600 hover:to-purple-700 transition-all duration-300",
-            "shadow-lg hover:shadow-xl transform hover:scale-105"
-          )}
+          size="lg"
+          className="h-12 text-lg"
           disabled={loading}
         >
-          {loading ? "Creating Task..." : "Start Analysis"}
+          {loading ? (
+            <LoaderCircle className="animate-spin" />
+          ) : (
+            <>
+              Start Analysis <ArrowRight className="ml-2 h-5 w-5" />
+            </>
+          )}
         </Button>
       </form>
-    </main>
+    </section>
   );
 }

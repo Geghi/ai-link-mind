@@ -1,23 +1,21 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { BrainCircuit } from "lucide-react";
 
 export function Header() {
   return (
     <header className={cn(
-      "z-50 w-full p-4 border-b border-white/10 h-16 flex items-center",
-      "bg-black/30 backdrop-blur-lg", // Glassmorphism effect
-      "shadow-2xl shadow-white/5",
-      "transition-all duration-300"
+      "sticky top-0 px-4 sm:px-8 lg:px-12 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
     )}>
-      <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
-        <Link href="/" className={cn(
-          "text-2xl font-bold tracking-tighter text-white",
-          "hover:scale-105 transition-transform duration-300"
-        )}>
-          LinkMind
+      <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
+        <Link href="/" className="flex items-center gap-2">
+          <BrainCircuit className="h-6 w-6 text-primary" />
+          <span className="font-bold text-lg tracking-tighter">
+            LinkMindAI
+          </span>
         </Link>
-        <p className="text-sm text-gray-400 hidden md:block">
-          Your intelligent link analyzer
+        <p className="text-sm text-muted-foreground hidden md:block">
+          Transform any website into a queryable knowledge base.
         </p>
       </div>
     </header>

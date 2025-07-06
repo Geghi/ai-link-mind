@@ -65,14 +65,6 @@ src/
 
 ---
 
-## Ⅴ. Styling (Shadcn/Tailwind)
-1.  **`cn` Utility**: Mandatory for all conditional/merged classes.
-2.  **Class Sorting**: Use the official Prettier plugin to auto-sort Tailwind classes.
-3.  **No Custom CSS**: Achieve all styling with Tailwind utilities or by extending `tailwind.config.ts`.
-4.  **Variants with `cva`**: Define component variants programmatically using `cva`.
-
----
-
 ## Ⅵ. TypeScript
 1.  **Strict Mode**: `tsconfig.json` must have `"strict": true`.
 2.  **Be Explicit**: Always define types for function arguments, return values, and API boundaries.
@@ -99,11 +91,16 @@ src/
 ---
 
 ## Ⅸ. UI/UX Design System
-- **Visuals**: Use glassmorphism, gradient accents, and micro-animations. Design for dark mode.
-- **Patterns**: Use floating elements with depth, provide interactive feedback, and ensure clear spatial hierarchy. Use Lucide for icons.
-- **Animations**: Use stagger for page transitions, shimmer for loading skeletons, and Intersection Observer for scroll reveals.
-- **Mobile-First**: Ensure large touch targets (44px), thumb-friendly navigation, and progressive enhancement.
+
+For all tasks related to UI, UX, styling, or component design, refer to the detailed guidelines in the `.clinerules/optional/design_system_rules.md` file. This document contains specific rules on visual language, animations, styling, and component structure.
 
 ### **Maintaining Project Context**
-*   **Dynamic Updates:** These directive and context files are living documents. If a change in project requirements affects the workflow, data models, or core components, you must update the relevant `.clinerules` files to reflect these changes (even migrations if new tables are added).
-*   **Proactive Maintenance:** Always consider whether a code change necessitates a documentation change. Keeping the context files synchronized with the codebase is crucial for effective development.
+
+**These context files are living documents and must be kept current.** It is mandatory to update them immediately following any significant change to the project to ensure the documentation remains the single source of truth.
+
+**When to Update:**
+*   **Structural Changes:** If you add a new directory (e.g., `src/lib/analytics`), you must update the `Project Structure` diagram.
+*   **Data Model Changes:** If you create a new Supabase table, you must update the data model documentation and add a corresponding migration file in `supabase/migrations/`.
+*   **Workflow Modifications:** Any change to the user or data flow described in `project_context.md` must be documented.
+
+Proactively keeping these files synchronized with the codebase is a core development responsibility.

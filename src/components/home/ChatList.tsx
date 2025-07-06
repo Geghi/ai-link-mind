@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { MessageSquare, LoaderCircle } from 'lucide-react';
 
 interface Task {
   id: string;
@@ -39,13 +40,21 @@ export default function ChatList() {
   };
 
   if (isLoading) {
-    return <div className="text-center p-4">Loading chats...</div>;
+    return (
+      <div className="flex items-center justify-center gap-2 text-muted-foreground mt-8">
+        <LoaderCircle className="animate-spin h-5 w-5" />
+        <span>Loading previous chats...</span>
+      </div>
+    );
   }
 
   return (
-    <div className="w-full max-w-md mt-8">
-      <h2 className="text-xl font-bold mb-4 text-white">Available Chats</h2>
-      <div className="max-h-60 overflow-y-auto rounded-lg border border-gray-700 bg-gray-800/50 p-2">
+    <section className="w-full max-w-xl mt-12 animate-fade-in-up delay-500">
+      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <MessageSquare className="h-5 w-5 text-primary" />
+        Recent Analyses
+      </h2>
+      <div className="max-h-72 overflow-y-auto rounded-lg border bg-background/50 p-2 backdrop-blur-sm">
         {tasks.length > 0 ? (
           <ul className="space-y-2">
             {tasks.map((task) => (
@@ -53,22 +62,24 @@ export default function ChatList() {
                 key={task.id}
                 onClick={() => handleTaskClick(task.id)}
                 className={cn(
-                  "p-3 rounded-md cursor-pointer transition-colors",
-                  "bg-gray-700/50 hover:bg-gray-600/80",
-                  "text-white text-sm"
+                  "p-3 rounded-md cursor-pointer transition-all",
+                  "bg-card/50 hover:bg-primary/10 hover:shadow-lg hover:scale-[1.02]",
+                  "border border-transparent hover:border-primary/20"
                 )}
               >
-                <p className="font-semibold truncate">{task.website_basename}</p>
-                <p className="text-xs text-gray-400">
-                  {new Date(task.created_at).toLocaleString()}
+                <p className="font-semibold truncate text-foreground">{task.website_basename}</p>
+                <p className="text-xs text-muted-foreground">
+                  Analyzed on {new Date(task.created_at).toLocaleDateString()}
                 </p>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-center text-gray-400 py-4">No chats available.</p>
+          <p className="text-center text-muted-foreground py-8">
+            No previous analyses found. Start a new one above!
+          </p>
         )}
       </div>
-    </div>
+    </section>
   );
 }

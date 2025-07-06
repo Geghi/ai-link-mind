@@ -2,6 +2,10 @@
 
 import { UrlEntry } from '@/types';
 import { useRouter } from 'next/navigation';
+import { TableRow, TableCell } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { MessageSquarePlus } from 'lucide-react';
 
 interface DashboardTableRowProps {
   entry: UrlEntry;
@@ -13,18 +17,16 @@ const formatDate = (dateString: string | null) => {
   return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleString();
 };
 
-const getStatusColor = (status: UrlEntry['status']) => {
+const getStatusVariant = (status: UrlEntry['status']): "default" | "secondary" | "destructive" | "outline" => {
   switch (status) {
-    case 'Queued':
-      return 'text-yellow-400';
-    case 'In Progress':
-      return 'text-blue-400';
     case 'Completed':
-      return 'text-green-400';
+      return 'default';
+    case 'In Progress':
+      return 'secondary';
     case 'Failed':
-      return 'text-red-400';
+      return 'destructive';
     default:
-      return 'text-gray-400';
+      return 'outline';
   }
 };
 
@@ -51,33 +53,25 @@ export const DashboardTableRow = ({ entry }: DashboardTableRowProps) => {
   };
 
   return (
-    <tr className="border-b border-white/10 last:border-b-0">
-      <td className="py-3 px-4">
-        <a href={entry.url} target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline">
+    <TableRow>
+      <TableCell>
+        <a href={entry.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-foreground font-medium truncate block max-w-md">
           {entry.url}
         </a>
-      </td>
-      <td className={`py-3 px-4 font-semibold ${getStatusColor(entry.status)}`}>
-        {entry.status}
-      </td>
-      <td className="py-3 px-4 text-gray-400">
-        {formatDate(entry.created_at)}
-      </td>
-      <td className="py-3 px-4 text-gray-400">
-        {formatDate(entry.updated_at)}
-      </td>
-      <td className="py-3 px-4">
+      </TableCell>
+      <TableCell>
+        <Badge variant={getStatusVariant(entry.status)}>{entry.status}</Badge>
+      </TableCell>
+      <TableCell className="text-muted-foreground">{formatDate(entry.created_at)}</TableCell>
+      <TableCell className="text-muted-foreground">{formatDate(entry.updated_at)}</TableCell>
+      <TableCell className="">
         {entry.status === 'Completed' && (
-          <>
-            <button
-              onClick={() => handleNewChat(entry.task_id)}
-              className="text-green-400 hover:underline"
-            >
-              New Chat
-            </button>
-          </>
+          <Button variant="outline" size="sm" onClick={() => handleNewChat(entry.task_id)}>
+            <MessageSquarePlus className="h-4 w-4 mr-2" />
+            New Chat
+          </Button>
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 };

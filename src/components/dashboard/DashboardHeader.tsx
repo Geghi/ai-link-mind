@@ -1,18 +1,20 @@
 import { cn } from "@/lib/utils";
 import React from "react";
+import { LayoutDashboard } from "lucide-react";
 
 export default function DashboardHeader() {
   return (
-    <>
+    <header className="mb-8 text-center">
       <h1 className={cn(
-        "text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4",
-        "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600"
+        "text-4xl sm:text-5xl font-extrabold mb-2 tracking-tighter flex items-center justify-center gap-3",
+        "text-transparent bg-clip-text bg-gradient-to-br from-primary via-purple-500 to-orange-500"
       )}>
-        Dashboard
+        <LayoutDashboard className="h-8 w-8 text-primary hidden sm:block" />
+        Analysis Dashboard
       </h1>
-      <p className="text-lg sm:text-xl lg:text-2xl text-gray-300 mb-6">
-        Here you can monitor the status of your scraped sites.
+      <p className="text-lg text-muted-foreground">
+        Monitor the real-time status of your website analysis tasks.
       </p>
-    </>
+    </header>
   );
 }

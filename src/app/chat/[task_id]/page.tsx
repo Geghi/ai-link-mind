@@ -251,7 +251,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex w-full bg-gray-900 text-white font-sans h-full overflow-hidden">
+    <div className="flex w-full bg-background text-foreground font-sans h-full overflow-hidden">
       <ChatSidebar
         chatSessions={chatSessions}
         currentChatSessionId={currentChatSessionId}

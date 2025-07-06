@@ -3,20 +3,19 @@ import React from "react";
 
 export default function HomePageHeader() {
   return (
-    <header className="mb-12 animate-fade-in-down">
+    <header className="mb-12 animate-fade-in-down text-center">
       <h1 className={cn(
-        "text-6xl sm:text-7xl lg:text-8xl font-extrabold mb-4",
-        "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600",
+        "text-5xl sm:text-6xl lg:text-7xl font-extrabold mb-4 tracking-tighter",
+        "text-transparent bg-clip-text bg-gradient-to-br from-primary via-purple-500 to-orange-500",
         "drop-shadow-lg"
       )}>
         LinkMindAI
       </h1>
       <p className={cn(
-        "text-lg sm:text-xl lg:text-2xl text-gray-300 max-w-2xl mx-auto",
+        "text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto",
         "animate-fade-in-up delay-200"
       )}>
-        Your intelligent web-scraping and knowledge-base assistant.
-        Transform any website into a queryable knowledge base with AI.
+        Paste a URL, and we'll transform the entire website into a smart, queryable knowledge base for you.
       </p>
     </header>
   );
