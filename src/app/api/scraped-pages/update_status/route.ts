@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/client/supabaseClient';
+import { supabase } from '@/services/supabase/client';
 
 // PUT /api/scraped-pages/update-status
 // Updates the status of a scraped_pages entry

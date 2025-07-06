@@ -1,34 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/client/supabaseClient';
+import { supabase } from '@/services/supabase/client';
 
 // Helper function to generate a dummy URL
-const generateDummyUrl = (siteId: string) => {
-  return `https://example.com/site/${siteId}/page/${Math.random().toString(36).substring(2, 15)}`;
+const generateDummyUrl = (task_id: string) => {
+  return `https://example.com/site/${task_id}/page/${Math.random().toString(36).substring(2, 15)}`;
 };
 
-// GET /api/scraped-pages/add?siteId=<uuid>
+// GET /api/scraped-pages/add?task_id=<uuid>
 // Adds a dummy URL entry to the scraped_pages table
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const siteId = searchParams.get('siteId');
+    const task_id = searchParams.get('task_id');
 
-    if (!siteId) {
-      return NextResponse.json({ error: 'siteId is required' }, { status: 400 });
+    if (!task_id) {
+      return NextResponse.json({ error: 'task_id is required' }, { status: 400 });
     }
 
-    // Validate if siteId is a valid UUID (optional but good practice)
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(siteId)) {
-      return NextResponse.json({ error: 'Invalid siteId format (must be UUID)' }, { status: 400 });
+    // Validate if task_id is a valid UUID (optional but good practice)
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(task_id)) {
+      return NextResponse.json({ error: 'Invalid task_id format (must be UUID)' }, { status: 400 });
     }
 
-    const dummyUrl = generateDummyUrl(siteId);
+    const dummyUrl = generateDummyUrl(task_id);
 
     const { data, error } = await supabase
       .from('scraped_pages')
       .insert([
         {
-          task_id: siteId,
+          task_id: task_id,
           url: dummyUrl,
           status: 'Queued', // Initial status
         },

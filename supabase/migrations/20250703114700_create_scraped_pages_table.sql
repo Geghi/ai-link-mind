@@ -7,3 +7,7 @@ create table public.scraped_pages (
   updated_at timestamp with time zone null,
   constraint scraped_pages_pkey primary key (id)
 ) TABLESPACE pg_default;
+
+
+ALTER TABLE scraped_pages
+ADD CONSTRAINT unique_task_url UNIQUE (task_id, url);
