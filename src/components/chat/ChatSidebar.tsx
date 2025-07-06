@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { PlusCircle, MoreHorizontal } from "lucide-react";
+import { PlusCircle, MoreHorizontal, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,35 +10,55 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChatSession, UrlEntry } from '@/types';
+import { ChatSession } from '@/types';
 
 interface ChatSidebarProps {
   chatSessions: ChatSession[];
   currentChatSessionId: string | null;
-  urlEntry: UrlEntry | null;
+  websiteBasename: string | null;
   loading: boolean;
   initialLoading: boolean;
   handleNewChat: () => Promise<void>;
   setCurrentChatSessionId: (sessionId: string) => void;
   handleDeleteChat: (sessionId: string) => Promise<void>;
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
 export default function ChatSidebar({
   chatSessions,
   currentChatSessionId,
-  urlEntry,
+  websiteBasename,
   loading,
   initialLoading,
   handleNewChat,
   setCurrentChatSessionId,
   handleDeleteChat,
+  isSidebarOpen,
+  setIsSidebarOpen,
 }: ChatSidebarProps) {
   return (
-    <aside className="w-64 bg-gray-800/60 backdrop-blur-md border-r border-gray-700/50 flex flex-col p-4">
-      <h2 className='text-xl font-bold mb-4 text-blue-400'>Chats for:</h2>
-      {urlEntry && (
-        <p className="text-sm text-gray-300 mb-4 truncate" title={urlEntry.url}>
-          {urlEntry.url}
+    <aside
+      className={cn(
+        'fixed left-0 h-full w-64 bg-gray-800/60 backdrop-blur-md border-r border-gray-700/50 flex flex-col p-4 transition-transform duration-300 ease-in-out z-50',
+        'md:translate-x-0',
+        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      )}
+    >
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-blue-400">Chats for:</h2>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden text-gray-400 hover:bg-gray-700/50"
+          onClick={() => setIsSidebarOpen(false)}
+        >
+          <X className="h-6 w-6" />
+        </Button>
+      </div>
+      {websiteBasename && (
+        <p className="text-sm text-gray-300 mb-4 truncate" title={websiteBasename}>
+          {websiteBasename}
         </p>
       )}
       <Button

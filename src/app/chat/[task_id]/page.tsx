@@ -1,24 +1,27 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/services/supabase/client';
-import { ChatMessage, ChatSession, UrlEntry } from '@/types';
-import ChatSidebar from "@/components/chat/ChatSidebar";
-import ChatHeader from "@/components/chat/ChatHeader";
-import ChatMessagesDisplay from "@/components/chat/ChatMessagesDisplay";
-import ChatInputArea from "@/components/chat/ChatInputArea";
+import { ChatMessage, ChatSession } from '@/types';
+import ChatSidebar from '@/components/chat/ChatSidebar';
+import ChatHeader from '@/components/chat/ChatHeader';
+import ChatMessagesDisplay from '@/components/chat/ChatMessagesDisplay';
+import ChatInputArea from '@/components/chat/ChatInputArea';
+import { useRouter } from 'next/navigation';
 
 export default function ChatPage() {
   const { task_id: task_id } = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [currentChatSessionId, setCurrentChatSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [urlEntry, setUrlEntry] = useState<UrlEntry | null>(null);
+  const [websiteBasename, setWebsiteBasename] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -40,6 +43,7 @@ export default function ChatPage() {
       const newSession: ChatSession = await response.json();
       setChatSessions((prev) => [newSession, ...prev]);
       setCurrentChatSessionId(newSession.id);
+      router.push(`/chat/${task_id}?chatSessionId=${newSession.id}`);
       setMessages([]);
       setInput("");
     } catch (error) {
@@ -60,17 +64,17 @@ export default function ChatPage() {
       setInitialLoading(true);
       const urlChatSessionId = searchParams.get('chatSessionId');
       console.log('Fetching initial data for task_id:', task_id, 'with chatSessionId:', urlChatSessionId);
-      const { data: urlData, error: urlError } = await supabase
-        .from('scraped_pages')
-        .select('*')
-        .eq('task_id', task_id)
-        .limit(1)
+
+      const { data: taskData, error: taskError } = await supabase
+        .from('tasks')
+        .select('website_basename')
+        .eq('id', task_id)
         .single();
 
-      if (urlError || !urlData) {
-        console.error('Error fetching URL entry:', urlError);
+      if (taskError || !taskData) {
+        console.error('Error fetching task details:', taskError);
       } else {
-        setUrlEntry(urlData);
+        setWebsiteBasename(taskData.website_basename);
       }
 
       const { data: sessions, error: sessionsError } = await supabase
@@ -81,16 +85,28 @@ export default function ChatPage() {
 
       if (sessionsError) {
         console.error('Error fetching chat sessions:', sessionsError);
-      } else {
-        setChatSessions(sessions as ChatSession[]);
-        if (urlChatSessionId && sessions.some(s => s.id === urlChatSessionId)) {
-          setCurrentChatSessionId(urlChatSessionId);
-        } else if (sessions && sessions.length > 0) {
-          setCurrentChatSessionId(sessions[0].id);
-        } else {
-          await handleNewChat();
-        }
+        setInitialLoading(false);
+        return;
       }
+
+      setChatSessions(sessions as ChatSession[]);
+
+      const sessionExistsInUrl = urlChatSessionId && sessions.some(s => s.id === urlChatSessionId);
+
+      if (sessionExistsInUrl) {
+        console.log('Setting current chat session from URL:', urlChatSessionId);
+        setCurrentChatSessionId(urlChatSessionId);
+      } else if (sessions && sessions.length > 0) {
+        const mostRecentSession = sessions[0];
+        console.log('No valid chat session in URL, redirecting to the most recent one:', mostRecentSession.id);
+        router.push(`/chat/${task_id}?chatSessionId=${mostRecentSession.id}`);
+        return; 
+      } else {
+        console.log('No existing chat sessions found, creating a new one.');
+        await handleNewChat();
+        return;
+      }
+      
       setInitialLoading(false);
     };
 
@@ -235,19 +251,25 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex w-full h-screen bg-gray-900 text-white font-sans">
+    <div className="flex w-full bg-gray-900 text-white font-sans h-full overflow-hidden">
       <ChatSidebar
         chatSessions={chatSessions}
         currentChatSessionId={currentChatSessionId}
-        urlEntry={urlEntry}
+        websiteBasename={websiteBasename}
         loading={loading}
         initialLoading={initialLoading}
         handleNewChat={handleNewChat}
         setCurrentChatSessionId={setCurrentChatSessionId}
         handleDeleteChat={handleDeleteChat}
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
       />
-      <div className="flex-1 flex flex-col">
-        <ChatHeader urlEntry={urlEntry} currentChatSessionId={currentChatSessionId} />
+      <div className="flex-1 flex flex-col transition-all h-full duration-300 md:ml-64">
+        <ChatHeader
+          websiteBasename={websiteBasename}
+          currentChatSessionId={currentChatSessionId}
+          setIsSidebarOpen={setIsSidebarOpen}
+        />
         <ChatMessagesDisplay
           messages={messages}
           loading={loading}

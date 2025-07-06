@@ -18,7 +18,7 @@ export default function Home() {
 
   return (
     <div className={cn(
-      "flex flex-col items-center justify-center text-center min-h-screen w-full",
+      "flex flex-col items-center justify-center text-center w-full",
       "text-white",
       "p-4 sm:p-8 lg:p-12"
     )}>
