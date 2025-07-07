@@ -94,6 +94,17 @@ src/
 
 For all tasks related to UI, UX, styling, or component design, refer to the detailed guidelines in the `.clinerules/optional/design_system_rules.md` file. This document contains specific rules on visual language, animations, styling, and component structure.
 
+---
+
+## X. Notifications
+
+For all user-facing notifications, use the following Shadcn UI components:
+
+*   **Toasts**: Use the `sonner` component for all toast messages. This component is available via the `useToast` hook.
+*   **Alerts/Confirms**: Use the `AlertDialog` component for all alert and confirm messages. This component is available via the `useAlertDialog` hook.
+
+Under no circumstances should you use the default TypeScript `alert()` and `confirm()` functions.
+
 ### **Maintaining Project Context**
 
 **These context files are living documents and must be kept current.** It is mandatory to update them immediately following any significant change to the project to ensure the documentation remains the single source of truth.
