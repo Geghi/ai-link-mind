@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Header } from "@/components/common/Header";
+import { ToastProvider } from "@/components/ui/toast-provider";
 // import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body className="flex flex-col h-screen bg-background text-foreground">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-background via-background/80 to-black/70 -z-10" />
         <Header />
+        <ToastProvider />
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
