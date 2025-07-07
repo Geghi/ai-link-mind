@@ -16,7 +16,7 @@ interface UrlInputFormProps {
 }
 
 export default function UrlInputForm({ onUrlSubmit }: UrlInputFormProps) {
-  const [url, setUrl] = useState("https://mantovani-giacomo.com/");
+  const [url, setUrl] = useState("");
   const { resetUrlEntries } = useUrlStoreActions();
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
