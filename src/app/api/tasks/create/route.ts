@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabase } from '@/services/supabase/client';
+import { getSupabaseRlsClient } from '@/services/supabase/server'; // Import getSupabaseRlsClient
+import { getOrCreateAnonymousUserId } from '@/lib/auth';
 
 // Helper function to extract website basename
 const getWebsiteBasename = (url: string): string => {
@@ -26,11 +27,16 @@ export async function POST(request: Request) {
     }
 
     const websiteBasename = getWebsiteBasename(url);
+    const userId = await getOrCreateAnonymousUserId();
+    console.log(`Creating task for user ID: ${userId} with website basename: ${websiteBasename}`);
 
-    // Insert into the 'tasks' table
+    // Get RLS-enabled Supabase client
+    const supabase = await getSupabaseRlsClient(userId);
+
+    // Insert into the 'tasks' table using the RLS-enabled client
     const { data: newTask, error: taskError } = await supabase
       .from('tasks')
-      .insert({ website_basename: websiteBasename })
+      .insert({ website_basename: websiteBasename, user_id: userId })
       .select('id')
       .single();
 

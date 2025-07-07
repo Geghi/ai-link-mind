@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getOrCreateAnonymousUserId } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
@@ -8,7 +9,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "URL and task_id are required" }, { status: 400 });
     }
 
-    console.log(`Received URL: ${url}, Received task_id: ${task_id}`);
+    const userId = await getOrCreateAnonymousUserId();
+    console.log(`Received URL: ${url}, Received task_id: ${task_id}, User ID: ${userId}`);
 
     const scrapingApiEndpoint = process.env.SCRAPING_API_ENDPOINT;
 
@@ -21,7 +23,7 @@ export async function POST(request: Request) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ url, task_id: task_id }),
+      body: JSON.stringify({ url, task_id: task_id, user_id: userId }),
     });
 
     if (!response.ok) {
