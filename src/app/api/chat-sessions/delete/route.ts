@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/services/supabase/client';
+import { getSupabaseRlsClient } from '@/services/supabase/server'; // Import getSupabaseRlsClient
+import { getOrCreateAnonymousUserId } from '@/lib/auth';
 
 export async function DELETE(request: Request) {
   try {
@@ -9,10 +10,16 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
     }
 
+    const userId = await getOrCreateAnonymousUserId();
+
+    // Get RLS-enabled Supabase client
+    const supabase = await getSupabaseRlsClient(userId);
+
     const { error } = await supabase
       .from('chat_sessions')
       .delete()
-      .eq('id', sessionId);
+      .eq('id', sessionId)
+      .eq('user_id', userId); // Ensure only the owner can delete
 
     if (error) {
       console.error('Error deleting chat session:', error);
