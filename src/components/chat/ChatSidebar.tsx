@@ -20,7 +20,7 @@ interface ChatSidebarProps {
   initialLoading: boolean;
   handleNewChat: () => Promise<void>;
   setCurrentChatSessionId: (sessionId: string) => void;
-  handleDeleteChat: (sessionId: string) => Promise<void>;
+  onDeleteChatSessionRequest: (sessionId: string) => void; // New prop
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
 }
@@ -33,7 +33,7 @@ export default function ChatSidebar({
   initialLoading,
   handleNewChat,
   setCurrentChatSessionId,
-  handleDeleteChat,
+  onDeleteChatSessionRequest, // New prop
   isSidebarOpen,
   setIsSidebarOpen,
 }: ChatSidebarProps) {
@@ -97,7 +97,7 @@ export default function ChatSidebar({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-card border border-border text-foreground">
-                  <DropdownMenuItem onClick={() => handleDeleteChat(session.id)} className="text-destructive hover:bg-destructive/10 focus:bg-destructive/10">
+                  <DropdownMenuItem onClick={() => onDeleteChatSessionRequest(session.id)} className="text-destructive hover:bg-destructive/10 focus:bg-destructive/10">
                     Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
