@@ -56,7 +56,7 @@ export default function DashboardPage() {
       <DashboardHeader />
 
       {urlEntries.length === 0 ? (
-        <p className="text-gray-400">No URLs have been added yet for this task.</p>
+        <p className="text-gray-400 text-center">No URLs have been added yet for this task.</p>
       ) : (
         <UrlTable urlEntries={urlEntries} />
       )}
