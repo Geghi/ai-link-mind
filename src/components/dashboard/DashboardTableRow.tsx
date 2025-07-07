@@ -2,6 +2,7 @@
 
 import { UrlEntry } from '@/types';
 import { useRouter } from 'next/navigation';
+import { toast } from "sonner";
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,20 +36,10 @@ export const DashboardTableRow = ({ entry }: DashboardTableRowProps) => {
 
   const handleNewChat = async (task_id: string) => {
     try {
-      const response = await fetch("/api/chat-sessions/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ task_id: task_id }),
-      });
-
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-      const data = await response.json();
-      const newSessionId = data.id;
-      router.push(`/chat/${task_id}?chatSessionId=${newSessionId}`);
+      router.push(`/chat/${task_id}`);
     } catch (error) {
       console.error("Error creating new chat session:", error);
-      alert("Failed to create new chat session.");
+      toast.error("Failed to create new chat session.");
     }
   };
 
