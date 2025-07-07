@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
-import { supabase } from '@/services/supabase/client';
+import apiClient from "@/lib/apiClient";
+import { createSupabaseBrowserClient } from '@/services/supabase/client';
 import { ChatMessage, ChatSession } from '@/types';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import ChatSidebar from '@/components/chat/ChatSidebar';
 import ChatHeader from '@/components/chat/ChatHeader';
 import ChatMessagesDisplay from '@/components/chat/ChatMessagesDisplay';
@@ -22,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function ChatPage() {
+  const supabase = createSupabaseBrowserClient();
   const { task_id: task_id } = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -46,15 +49,8 @@ export default function ChatPage() {
     if (!task_id) return;
     setLoading(true);
     try {
-      const response = await fetch("/api/chat-sessions/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ task_id: task_id }),
-      });
-
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-      const newSession: ChatSession = await response.json();
+      const response = await apiClient.post<ChatSession>("/api/chat-sessions/create", { task_id: task_id });
+      const newSession = response.data;
       setChatSessions((prev) => [newSession, ...prev]);
       setCurrentChatSessionId(newSession.id);
       setMessages([]);
@@ -77,13 +73,7 @@ export default function ChatPage() {
   const handleDeleteChat = async (sessionId: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/chat-sessions/delete`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId }),
-      });
-
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      await apiClient.delete(`/api/chat-sessions/delete`, { data: { sessionId } });
 
       setChatSessions((prev) => prev.filter((session) => session.id !== sessionId));
 
@@ -99,8 +89,10 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    if (!task_id){
+    if (!task_id) {
       console.error("No task_id provided in URL parameters.");
+      toast.error("Invalid task ID provided. Redirecting to home.");
+      router.push('/');
       return;
     }
 
@@ -117,18 +109,26 @@ export default function ChatPage() {
 
       if (taskError || !taskData) {
         console.error('Error fetching task details:', taskError);
+        toast.error("Failed to load task details. Redirecting to home.");
+        router.push('/');
+        setInitialLoading(false);
+        return;
       } else {
         setWebsiteBasename(taskData.website_basename);
       }
 
-      const response = await fetch('/api/chat-sessions');
-      if (!response.ok) {
-        console.error('Failed to fetch chat sessions');
+      let sessions: ChatSession[] = [];
+      try {
+        const response = await apiClient.get<ChatSession[]>('/api/chat-sessions', { params: {task_id: task_id} }); ;
+        sessions = response.data;
+        setChatSessions(sessions);
+      } catch (error) {
+        console.error('Failed to fetch chat sessions', error);
+        toast.error("Failed to load chat sessions. Redirecting to home.");
+        router.push('/');
         setInitialLoading(false);
         return;
       }
-      const sessions = await response.json();
-      setChatSessions(sessions);
 
       const sessionExistsInUrl = urlChatSessionId && sessions.some((s: ChatSession) => s.id === urlChatSessionId);
 
@@ -145,13 +145,13 @@ export default function ChatPage() {
         }
         setCurrentChatSessionId(mostRecentSession.id); // Ensure state is set even if not redirecting
         setInitialLoading(false);
-        return; 
+        return;
       } else {
         if (isCreatingSessionRef.current) return;
 
         console.log('No existing chat sessions found, creating a new one.');
         isCreatingSessionRef.current = true;
-        await handleNewChat(false); 
+        await handleNewChat(false);
         isCreatingSessionRef.current = false;
         setInitialLoading(false);
         return;
@@ -159,7 +159,7 @@ export default function ChatPage() {
     };
 
     fetchInitialData();
-  }, [task_id, searchParams]);
+  }, [task_id, searchParams, router]);
 
   useEffect(() => {
     if (!currentChatSessionId) {
@@ -208,7 +208,7 @@ export default function ChatPage() {
           table: 'chat_messages',
           filter: `chat_session_id=eq.${currentChatSessionId}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<ChatMessage>) => {
           const newMessage = payload.new as ChatMessage;
           if (newMessage.sender === 'user') {
             return;
@@ -245,14 +245,7 @@ export default function ChatPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_session_id: currentChatSessionId, task_id: task_id, newMessage: userMessage.content }),
-      });
-
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
+      await apiClient.post("/api/chat", { chat_session_id: currentChatSessionId, task_id: task_id, newMessage: userMessage.content });
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages((prev) => [

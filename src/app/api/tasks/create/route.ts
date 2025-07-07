@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSupabaseRlsClient } from '@/services/supabase/server'; // Import getSupabaseRlsClient
-import { getOrCreateAnonymousUserId } from '@/lib/auth';
+import { createClient } from '@/services/supabase/server';
 
 // Helper function to extract website basename
 const getWebsiteBasename = (url: string): string => {
@@ -26,12 +25,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    const websiteBasename = getWebsiteBasename(url);
-    const userId = await getOrCreateAnonymousUserId();
-    console.log(`Creating task for user ID: ${userId} with website basename: ${websiteBasename}`);
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // Get RLS-enabled Supabase client
-    const supabase = await getSupabaseRlsClient(userId);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = user.id;
+
+    const websiteBasename = getWebsiteBasename(url);
+    console.log(`Creating task for user ID: ${userId} with website basename: ${websiteBasename}`);
 
     // Insert into the 'tasks' table using the RLS-enabled client
     const { data: newTask, error: taskError } = await supabase

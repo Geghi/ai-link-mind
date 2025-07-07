@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getSupabaseRlsClient } from '@/services/supabase/server';
-import { getOrCreateAnonymousUserId } from "@/lib/auth";
+import { createClient } from '@/services/supabase/server';
+import apiClient from "@/lib/apiClient";
 
 export async function POST(req: Request) {
   try {
@@ -9,10 +9,14 @@ export async function POST(req: Request) {
     if (!chat_session_id || !task_id || !newMessage) {
       return NextResponse.json({ error: "chat_session_id, task_id, and newMessage are required" }, { status: 400 });
     }
-    const user_id = await getOrCreateAnonymousUserId()
+    
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // Get RLS-enabled Supabase client
-    const supabase = await getSupabaseRlsClient(user_id);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const user_id = user.id;
 
     // Save user message
     const { error: userMessageError } = await supabase
@@ -21,6 +25,7 @@ export async function POST(req: Request) {
         chat_session_id: chat_session_id,
         sender: 'user',
         content: newMessage,
+        user_id: user_id,
       });
 
     if (userMessageError) {
@@ -56,26 +61,9 @@ export async function POST(req: Request) {
     }
 
     // Send task_id and messages to RAG API
-    const response = await fetch(ragApiEndpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ task_id: task_id, messages: messagesToSendToRAG, user_id: user_id }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Error from RAG API:", errorData);
-      return NextResponse.json(
-        { error: `Failed to get response from RAG API: ${errorData.error || response.statusText}` },
-        { status: response.status }
-      );
-    }
-
-    const data = await response.json();
-    console.log("Response from RAG API:", data);
-    const assistantResponse = data.message.response;
+    const response = await apiClient.post(ragApiEndpoint, { task_id: task_id, messages: messagesToSendToRAG, user_id: user_id });
+    console.log("Response from RAG API:", response.data);
+    const assistantResponse = response.data.message.response;
 
     // Save AI message
     const { error: aiMessageError } = await supabase
@@ -84,6 +72,7 @@ export async function POST(req: Request) {
         chat_session_id: chat_session_id,
         sender: 'ai',
         content: assistantResponse,
+        user_id: user_id,
       });
 
     if (aiMessageError) {

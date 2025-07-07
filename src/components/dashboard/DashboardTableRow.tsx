@@ -1,11 +1,10 @@
 "use client";
 
 import { UrlEntry } from '@/types';
-import { useRouter } from 'next/navigation';
-import { toast } from "sonner";
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import { MessageSquarePlus } from 'lucide-react';
 
 interface DashboardTableRowProps {
@@ -32,17 +31,6 @@ const getStatusVariant = (status: UrlEntry['status']): "default" | "secondary" |
 };
 
 export const DashboardTableRow = ({ entry }: DashboardTableRowProps) => {
-  const router = useRouter();
-
-  const handleNewChat = async (task_id: string) => {
-    try {
-      router.push(`/chat/${task_id}`);
-    } catch (error) {
-      console.error("Error creating new chat session:", error);
-      toast.error("Failed to create new chat session.");
-    }
-  };
-
   return (
     <TableRow>
       <TableCell>
@@ -57,9 +45,11 @@ export const DashboardTableRow = ({ entry }: DashboardTableRowProps) => {
       <TableCell className="text-muted-foreground">{formatDate(entry.updated_at)}</TableCell>
       <TableCell className="">
         {entry.status === 'Completed' && (
-          <Button variant="outline" size="sm" onClick={() => handleNewChat(entry.task_id)}>
-            <MessageSquarePlus className="h-4 w-4 mr-2" />
-            New Chat
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/chat/${entry.task_id}`}>
+              <MessageSquarePlus className="h-4 w-4 mr-2" />
+              New Chat
+            </Link>
           </Button>
         )}
       </TableCell>

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseRlsClient } from '@/services/supabase/server'; // Import getSupabaseRlsClient
-import { getOrCreateAnonymousUserId } from '@/lib/auth';
+import { createClient } from '@/services/supabase/server';
 
 export async function POST(request: Request) {
   const { task_id } = await request.json();
@@ -10,10 +9,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    const userId = await getOrCreateAnonymousUserId();
-    
-    // Get RLS-enabled Supabase client
-    const supabase = await getSupabaseRlsClient(userId);
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = user.id;
 
     const { data, error } = await supabase
       .from('chat_sessions')

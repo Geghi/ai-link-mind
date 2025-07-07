@@ -1,16 +1,21 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseRlsClient } from '@/services/supabase/server'; // Import getSupabaseRlsClient
-import { getOrCreateAnonymousUserId } from '@/lib/auth';
+import { createClient } from '@/services/supabase/server';
 import { ChatSessionWithTask } from '@/types';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const userId = await getOrCreateAnonymousUserId();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // Get RLS-enabled Supabase client
-    const supabase = await getSupabaseRlsClient(userId);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = user.id;
 
-    const { data: chatSessions, error } = await supabase
+    const { searchParams } = new URL(request.url);
+    const taskId = searchParams.get('task_id');
+
+    let query = supabase
       .from('chat_sessions')
       .select(`
         id,
@@ -24,6 +29,12 @@ export async function GET() {
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
+
+    if (taskId) {
+      query = query.eq('task_id', taskId);
+    }
+
+    const { data: chatSessions, error } = await query;
 
     if (error) {
       console.error('Error fetching chat sessions:', error);

@@ -12,8 +12,8 @@ export default function Home() {
   const { setPendingAnalysis } = useUrlStoreActions();
 
   const handleUrlSubmit = async (url: string, task_id: string) => {
-    setPendingAnalysis(url, task_id); 
-    router.push(`/dashboard`);
+        setPendingAnalysis(url, task_id); 
+        router.push(`/dashboard?task_id=${task_id}`);
   };
 
   return (

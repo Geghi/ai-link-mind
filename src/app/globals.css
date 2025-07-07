@@ -123,4 +123,5 @@
   body {
     @apply text-foreground; /* Keep text color from theme */
   }
+
 }

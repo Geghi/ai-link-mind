@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createSupabaseBrowserClient } from "@/services/supabase/client";
+import apiClient from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { useUrlStoreActions } from '@/stores/urlStore';
+import { useUrlStoreActions } from "@/stores/urlStore";
 import { ArrowRight, LoaderCircle } from "lucide-react";
+import type { User } from "@supabase/supabase-js";
 
 interface UrlInputFormProps {
   onUrlSubmit: (url: string, task_id: string) => void;
@@ -15,28 +19,34 @@ export default function UrlInputForm({ onUrlSubmit }: UrlInputFormProps) {
   const [url, setUrl] = useState("https://mantovani-giacomo.com/");
   const { resetUrlEntries } = useUrlStoreActions();
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+  const supabase = createSupabaseBrowserClient();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+    };
+    getUser();
+  }, [supabase.auth]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url || loading) return;
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
 
     setLoading(true);
     resetUrlEntries();
     console.log("Submitting URL to create task:", url);
 
     try {
-      const createTaskResponse = await fetch("/api/tasks/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
-
-      if (!createTaskResponse.ok) {
-        const errorData = await createTaskResponse.json();
-        throw new Error(`Failed to create task: ${errorData.error || createTaskResponse.statusText}`);
-      }
-
-      const { task_id } = await createTaskResponse.json();
+      const response = await apiClient.post<{ task_id: string }>("/api/tasks/create", { url });
+      const { task_id } = response.data;
       console.log(`Task created with ID: ${task_id}`);
       onUrlSubmit(url, task_id);
     } catch (error) {

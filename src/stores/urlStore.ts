@@ -16,6 +16,7 @@ interface UrlState {
     unsubscribe: () => void;
     setPendingAnalysis: (url: string, task_id: string) => void;
     clearPendingAnalysis: () => void;
+    setUrlEntries: (entries: UrlEntry[]) => void; // New action
   };
 }
 
@@ -39,6 +40,7 @@ export const useUrlStore = create<UrlState>((set, get) => ({
         ),
       })),
     resetUrlEntries: () => set({ urlEntries: [] }),
+    setUrlEntries: (entries) => set({ urlEntries: entries }), // Implementation for new action
     initializeSubscription: (task_id) => {
       const { channel, actions } = get();
       if (channel) {

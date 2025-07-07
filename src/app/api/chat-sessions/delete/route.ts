@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseRlsClient } from '@/services/supabase/server'; // Import getSupabaseRlsClient
-import { getOrCreateAnonymousUserId } from '@/lib/auth';
+import { createClient } from '@/services/supabase/server';
 
 export async function DELETE(request: Request) {
   try {
@@ -10,10 +9,13 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
     }
 
-    const userId = await getOrCreateAnonymousUserId();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // Get RLS-enabled Supabase client
-    const supabase = await getSupabaseRlsClient(userId);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = user.id;
 
     const { error } = await supabase
       .from('chat_sessions')
