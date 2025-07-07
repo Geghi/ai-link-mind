@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { useUrlStoreActions } from '@/stores/urlStore';
 import { ArrowRight, LoaderCircle } from "lucide-react";
@@ -40,7 +41,7 @@ export default function UrlInputForm({ onUrlSubmit }: UrlInputFormProps) {
       onUrlSubmit(url, task_id);
     } catch (error) {
       console.error("Error submitting URL:", error);
-      alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+      toast.error(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     } finally {
       setLoading(false);
     }
