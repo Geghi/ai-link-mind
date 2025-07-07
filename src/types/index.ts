@@ -7,6 +7,13 @@ export interface UrlEntry {
   status: UrlStatus;
   created_at: string;
   updated_at: string | null;
+  user_id: string; // Add user_id to ChatSession
+}
+
+export interface ChatSessionWithTask extends ChatSession {
+  tasks: {
+    website_basename: string;
+  }[]; // Supabase returns an array for joined tables
 }
 
 export interface ChatSession {
