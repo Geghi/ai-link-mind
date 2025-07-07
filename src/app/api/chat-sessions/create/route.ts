@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/services/supabase/client';
+import { getSupabaseRlsClient } from '@/services/supabase/server'; // Import getSupabaseRlsClient
+import { getOrCreateAnonymousUserId } from '@/lib/auth';
 
 export async function POST(request: Request) {
   const { task_id } = await request.json();
@@ -9,9 +10,14 @@ export async function POST(request: Request) {
   }
 
   try {
+    const userId = await getOrCreateAnonymousUserId();
+    
+    // Get RLS-enabled Supabase client
+    const supabase = await getSupabaseRlsClient(userId);
+
     const { data, error } = await supabase
       .from('chat_sessions')
-      .insert({ task_id })
+      .insert({ task_id, user_id: userId })
       .select()
       .single();
 
