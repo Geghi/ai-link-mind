@@ -9,6 +9,17 @@ import ChatHeader from '@/components/chat/ChatHeader';
 import ChatMessagesDisplay from '@/components/chat/ChatMessagesDisplay';
 import ChatInputArea from '@/components/chat/ChatInputArea';
 import { useRouter } from 'next/navigation';
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 export default function ChatPage() {
   const { task_id: task_id } = useParams();
@@ -22,13 +33,16 @@ export default function ChatPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [websiteBasename, setWebsiteBasename] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
+  const [sessionIdToDelete, setSessionIdToDelete] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isCreatingSessionRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleNewChat = async () => {
+  const handleNewChat = async (navigate = true) => {
     if (!task_id) return;
     setLoading(true);
     try {
@@ -43,12 +57,42 @@ export default function ChatPage() {
       const newSession: ChatSession = await response.json();
       setChatSessions((prev) => [newSession, ...prev]);
       setCurrentChatSessionId(newSession.id);
-      router.push(`/chat/${task_id}?chatSessionId=${newSession.id}`);
       setMessages([]);
       setInput("");
+
+      const newUrl = `/chat/${task_id}?chatSessionId=${newSession.id}`;
+      if (navigate) {
+        router.push(newUrl);
+      } else {
+        window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
+      }
     } catch (error) {
       console.error("Error creating new chat session:", error);
-      alert("Failed to create new chat session.");
+      toast.error("Failed to create new chat session.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteChat = async (sessionId: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/chat-sessions/delete`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      });
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+      setChatSessions((prev) => prev.filter((session) => session.id !== sessionId));
+
+      if (currentChatSessionId === sessionId) {
+        setCurrentChatSessionId(null);
+        setMessages([]);
+      }
+    } catch (error) {
+      console.error("Error deleting chat session:", error);
     } finally {
       setLoading(false);
     }
@@ -77,41 +121,45 @@ export default function ChatPage() {
         setWebsiteBasename(taskData.website_basename);
       }
 
-      const { data: sessions, error: sessionsError } = await supabase
-        .from('chat_sessions')
-        .select('*')
-        .eq('task_id', task_id)
-        .order('created_at', { ascending: false });
-
-      if (sessionsError) {
-        console.error('Error fetching chat sessions:', sessionsError);
+      const response = await fetch('/api/chat-sessions');
+      if (!response.ok) {
+        console.error('Failed to fetch chat sessions');
         setInitialLoading(false);
         return;
       }
+      const sessions = await response.json();
+      setChatSessions(sessions);
 
-      setChatSessions(sessions as ChatSession[]);
-
-      const sessionExistsInUrl = urlChatSessionId && sessions.some(s => s.id === urlChatSessionId);
+      const sessionExistsInUrl = urlChatSessionId && sessions.some((s: ChatSession) => s.id === urlChatSessionId);
 
       if (sessionExistsInUrl) {
         console.log('Setting current chat session from URL:', urlChatSessionId);
         setCurrentChatSessionId(urlChatSessionId);
+        setInitialLoading(false);
       } else if (sessions && sessions.length > 0) {
         const mostRecentSession = sessions[0];
         console.log('No valid chat session in URL, redirecting to the most recent one:', mostRecentSession.id);
-        router.push(`/chat/${task_id}?chatSessionId=${mostRecentSession.id}`);
+        // Only redirect if the current URL doesn't already point to this session
+        if (urlChatSessionId !== mostRecentSession.id) {
+          router.push(`/chat/${task_id}?chatSessionId=${mostRecentSession.id}`);
+        }
+        setCurrentChatSessionId(mostRecentSession.id); // Ensure state is set even if not redirecting
+        setInitialLoading(false);
         return; 
       } else {
+        if (isCreatingSessionRef.current) return;
+
         console.log('No existing chat sessions found, creating a new one.');
-        await handleNewChat();
+        isCreatingSessionRef.current = true;
+        await handleNewChat(false); 
+        isCreatingSessionRef.current = false;
+        setInitialLoading(false);
         return;
       }
-      
-      setInitialLoading(false);
     };
 
     fetchInitialData();
-  }, [task_id, searchParams]); // Add searchParams to dependency array
+  }, [task_id, searchParams]);
 
   useEffect(() => {
     if (!currentChatSessionId) {
@@ -222,33 +270,6 @@ export default function ChatPage() {
     }
   };
 
-  const handleDeleteChat = async (sessionId: string) => {
-    if (!confirm("Are you sure you want to delete this chat session and all its messages? This action cannot be undone.")) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/chat-sessions/delete`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId }),
-      });
-
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-      setChatSessions((prev) => prev.filter((session) => session.id !== sessionId));
-
-      if (currentChatSessionId === sessionId) {
-        setCurrentChatSessionId(null);
-        setMessages([]);
-      }
-    } catch (error) {
-      console.error("Error deleting chat session:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="flex w-full bg-background text-foreground font-sans h-full overflow-hidden">
@@ -260,10 +281,32 @@ export default function ChatPage() {
         initialLoading={initialLoading}
         handleNewChat={handleNewChat}
         setCurrentChatSessionId={setCurrentChatSessionId}
-        handleDeleteChat={handleDeleteChat}
+        onDeleteChatSessionRequest={(sessionId) => {
+          setSessionIdToDelete(sessionId);
+          setIsAlertDialogOpen(true);
+        }}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
       />
+      <AlertDialog open={isAlertDialogOpen} onOpenChange={setIsAlertDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this chat session and all of its messages.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (sessionIdToDelete) {
+                handleDeleteChat(sessionIdToDelete);
+                setIsAlertDialogOpen(false);
+              }
+            }}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className="flex-1 flex flex-col transition-all h-full duration-300 md:ml-64">
         <ChatHeader
           websiteBasename={websiteBasename}
