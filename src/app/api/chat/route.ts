@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabase } from '@/services/supabase/client';
+import { getSupabaseRlsClient } from '@/services/supabase/server';
+import { getOrCreateAnonymousUserId } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
@@ -8,6 +9,10 @@ export async function POST(req: Request) {
     if (!chat_session_id || !task_id || !newMessage) {
       return NextResponse.json({ error: "chat_session_id, task_id, and newMessage are required" }, { status: 400 });
     }
+    const user_id = await getOrCreateAnonymousUserId()
+
+    // Get RLS-enabled Supabase client
+    const supabase = await getSupabaseRlsClient(user_id);
 
     // Save user message
     const { error: userMessageError } = await supabase
@@ -56,7 +61,7 @@ export async function POST(req: Request) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ task_id: task_id, messages: messagesToSendToRAG }),
+      body: JSON.stringify({ task_id: task_id, messages: messagesToSendToRAG, user_id: user_id }),
     });
 
     if (!response.ok) {
