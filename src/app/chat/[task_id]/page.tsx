@@ -88,6 +88,21 @@ export default function ChatPage() {
     }
   };
 
+  const handleDeleteTask = async () => {
+    if (!task_id) return;
+    setLoading(true);
+    try {
+      await apiClient.delete(`/api/tasks/delete`, { data: { task_id } });
+      toast.success("Website and all associated data deleted successfully.");
+      router.push('/dashboard');
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      toast.error("Failed to delete website. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!task_id) {
       console.error("No task_id provided in URL parameters.");
@@ -278,6 +293,7 @@ export default function ChatPage() {
           setSessionIdToDelete(sessionId);
           setIsAlertDialogOpen(true);
         }}
+        onDeleteTaskRequest={handleDeleteTask}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
       />

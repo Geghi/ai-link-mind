@@ -31,9 +31,14 @@ export default function ChatList() {
     const fetchTasks = async () => {
       try {
         const response = await apiClient.get<Task[]>('/api/tasks');
-        setTasks(response.data);
+        if (Array.isArray(response.data)) {
+          setTasks(response.data);
+        } else {
+          setTasks([]);
+        }
       } catch (error) {
-        console.error(error);
+        console.error('Failed to fetch tasks:', error);
+        setTasks([]);
       } finally {
         setIsLoading(false);
       }
@@ -80,7 +85,7 @@ export default function ChatList() {
                     className="ml-auto"
                   >
                     <Link
-                      href={`/dashboard?task_id=${task.id}`}
+                      href={`/task-status?task_id=${task.id}`}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <ExternalLink className="h-4 w-4 mr-1" />

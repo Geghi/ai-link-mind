@@ -1,13 +1,24 @@
 "use client";
 
 import React from 'react';
-import { PlusCircle, MoreHorizontal, X, MessageSquare } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, X, MessageSquare, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChatSession } from '@/types';
@@ -20,7 +31,8 @@ interface ChatSidebarProps {
   initialLoading: boolean;
   handleNewChat: () => Promise<void>;
   setCurrentChatSessionId: (sessionId: string) => void;
-  onDeleteChatSessionRequest: (sessionId: string) => void; // New prop
+  onDeleteChatSessionRequest: (sessionId: string) => void;
+  onDeleteTaskRequest: () => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
 }
@@ -33,14 +45,15 @@ export default function ChatSidebar({
   initialLoading,
   handleNewChat,
   setCurrentChatSessionId,
-  onDeleteChatSessionRequest, // New prop
+  onDeleteChatSessionRequest,
+  onDeleteTaskRequest,
   isSidebarOpen,
   setIsSidebarOpen,
 }: ChatSidebarProps) {
   return (
     <aside
       className={cn(
-        'fixed left-0 h-full w-64 bg-background/80 backdrop-blur-md border-r border-border/50 flex flex-col p-4 transition-transform duration-300 ease-in-out z-50',
+        'fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-background/80 backdrop-blur-md border-r border-border/50 flex flex-col p-4 transition-transform duration-300 ease-in-out z-40',
         'md:translate-x-0',
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
       )}
@@ -105,6 +118,30 @@ export default function ChatSidebar({
             </div>
           ))
         )}
+      </div>
+      <div className="mt-auto pt-4 pb-2  border-t border-border/50">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" className="w-full h-10">
+              <Trash2 className="w-5 h-5 mr-2" />
+              Delete Site Data
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action will permanently delete all scraped data and associated chat history for this website. Are you sure you want to proceed?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={onDeleteTaskRequest}>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </aside>
   );

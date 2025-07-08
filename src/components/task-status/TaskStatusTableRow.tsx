@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { MessageSquarePlus } from 'lucide-react';
 
-interface DashboardTableRowProps {
+interface TaskStatusTableRowProps {
   entry: UrlEntry;
 }
 
@@ -30,7 +30,7 @@ const getStatusVariant = (status: UrlEntry['status']): "default" | "secondary" |
   }
 };
 
-export const DashboardTableRow = ({ entry }: DashboardTableRowProps) => {
+export const TaskStatusTableRow = ({ entry }: TaskStatusTableRowProps) => {
   return (
     <TableRow>
       <TableCell>

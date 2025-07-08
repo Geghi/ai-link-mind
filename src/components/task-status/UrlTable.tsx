@@ -1,6 +1,6 @@
 import React from 'react';
 import { UrlEntry } from '@/types';
-import { DashboardTableRow } from '@/components/dashboard/DashboardTableRow';
+import { TaskStatusTableRow } from '@/components/task-status/TaskStatusTableRow';
 import { Table, TableBody, TableCaption, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface UrlTableProps {
@@ -23,7 +23,7 @@ export default function UrlTable({ urlEntries }: UrlTableProps) {
         </TableHeader>
         <TableBody>
           {urlEntries.map((entry) => (
-            <DashboardTableRow key={entry.id} entry={entry} />
+            <TaskStatusTableRow key={entry.id} entry={entry} />
           ))}
         </TableBody>
       </Table>

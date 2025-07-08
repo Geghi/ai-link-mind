@@ -19,25 +19,23 @@ A mandatory guide for a scalable, performant, and maintainable codebase, built o
 
 A clear, scalable structure with separation of concerns.
 
-```
 src/
 ├── app/
 │   ├── api/                 # API Route Handlers
-│   ├── dashboard/           # Route-specific components/layouts
-│   └── page.tsx             # Homepage
+│   ├── (routes)/            # Route groups (e.g., dashboard, chat)
 │   ├── layout.tsx           # Root Layout
-│   └── globals.css
+│   └── page.tsx             # Homepage
 ├── components/
 │   ├── ui/                  # Shadcn UI components
-│   └── common/              # Shared simple components (Header)
+│   ├── common/              # Shared simple components (e.g., Header)
+│   └── (features)/          # Components specific to a feature (e.g., chat, dashboard)
 ├── lib/
-│   └── utils.ts             # `cn()` and other utilities
+│   └── utils.ts             # Core utilities, API client, etc.
 ├── hooks/                   # Custom Client-Side hooks
+├── services/                # Third-party API integrations (Supabase, OpenAI)
+├── stores/                  # Zustand stores for global state
 ├── types/                   # Global TypeScript definitions
-└── services/                # Third-party API integrations (Supabase, OpenAI)
-```
-
----
+└── middleware.ts            # Next.js middleware for authentication
 
 ## Ⅲ. Component Architecture
 
@@ -78,6 +76,24 @@ src/
 - **Route Handlers**: Use for webhooks or dedicated API endpoints for client-side fetchers.
 - **Validation**: All API inputs must be validated with Zod.
 - **Standard Response**: Use a consistent JSON response shape (`{ data, error }`).
+
+---
+
+## Data Access & Supabase
+
+### **Supabase Client Strategy**
+
+To ensure security and performance, we use two different Supabase clients: one for the server and one for the client. It is critical to use the correct client based on the execution environment.
+
+-   **Server-Side Operations**: For any database interaction that runs on the server (e.g., in **Server Components**, **API Routes**, or **Server Actions**), you **must** use the server client.
+    -   **How to use**: Import and call the `createClient` function from `@/services/supabase/server.ts`.
+    -   **Example**: `const supabase = await createClient();`
+
+-   **Client-Side Operations**: For any database interaction that runs in the browser (i.e., within a component marked with `"use client"`), you **must** use the browser client.
+    -   **How to use**: Import and call the `createSupabaseBrowserClient` function from `@/services/supabase/client.ts`.
+    -   **Example**: `const supabase = createSupabaseBrowserClient();`
+
+**Golden Rule**: Never use the browser client on the server, and never use the server client in the browser. This separation is key to our security model.
 
 ---
 
