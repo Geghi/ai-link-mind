@@ -99,7 +99,7 @@ export default function MarketingContent() {
             <Accordion type="single" collapsible className="w-full mt-8">
               <AccordionItem value="item-1">
               <AccordionTrigger>What kind of websites can I use?</AccordionTrigger>
-              <AccordionContent>LinkMindAI works with most publicly accessible websites, including marketing sites, knowledge bases, blogs, and documentation portals. It's designed to handle complex, multi-page sites.</AccordionContent>
+              <AccordionContent>LinkMindAI works with most publicly accessible websites, including marketing sites, knowledge bases, blogs, and documentation portals. It&apos;s designed to handle complex, multi-page sites.</AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-2">
               <AccordionTrigger>Is my data secure?</AccordionTrigger>
@@ -107,7 +107,7 @@ export default function MarketingContent() {
               </AccordionItem>
               <AccordionItem value="item-3">
               <AccordionTrigger>How accurate are the answers?</AccordionTrigger>
-              <AccordionContent>Our AI is optimized for high accuracy and provides source links back to the original content, so you can always verify the information. It's designed to reduce hallucinations and provide trustworthy answers based solely on your provided content.</AccordionContent>
+              <AccordionContent>Our AI is optimized for high accuracy and provides source links back to the original content, so you can always verify the information. It&apos;s designed to reduce hallucinations and provide trustworthy answers based solely on your provided content.</AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-4">
               <AccordionTrigger>Will there be API access?</AccordionTrigger>
@@ -120,7 +120,7 @@ export default function MarketingContent() {
               <AccordionItem value="item-6">
               <AccordionTrigger>Can I upload my own documents or knowledge base?</AccordionTrigger>
               <AccordionContent>
-                This feature is currently in progress. Soon, you'll be able to upload your own custom documents or knowledge base directly into LinkMindAI, not just rely on web scraping. Stay tuned for updates!
+                This feature is currently in progress. Soon, you&apos;ll be able to upload your own custom documents or knowledge base directly into LinkMindAI, not just rely on web scraping. Stay tuned for updates!
               </AccordionContent>
               </AccordionItem>
             </Accordion>

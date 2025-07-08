@@ -15,7 +15,7 @@ export default function DashboardHeader() {
         "text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto",
         "animate-fade-in-up delay-200"
       )}>
-        Paste a URL, and we'll transform the entire website into a smart, queryable knowledge base for you.
+        Paste a URL, and we&apos;ll transform the entire website into a smart, queryable knowledge base for you.
       </p>
     </header>
   );

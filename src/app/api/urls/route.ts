@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/services/supabase/server';
-import { UrlEntry } from '@/types';
 
 export async function GET(request: Request) {
   try {
