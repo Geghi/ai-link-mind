@@ -1,22 +1,35 @@
 "use client";
 
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import apiClient from '@/lib/apiClient';
 import { useUrlStore, useUrlEntries, useUrlStoreActions } from '@/stores/urlStore';
 import TaskStatusHeader from '@/components/task-status/TaskStatusHeader';
 import UrlTable from '@/components/task-status/UrlTable';
-import { UrlEntry } from '@/types'; // Add this import
+import { UrlEntry } from '@/types';
 
 interface TaskStatusClientProps {
   taskId?: string;
 }
 
 export default function TaskStatusClient({ taskId }: TaskStatusClientProps) {
+  const router = useRouter();
   const urlEntries = useUrlEntries();
   const { initializeSubscription, unsubscribe, setUrlEntries, clearPendingAnalysis } = useUrlStoreActions();
   const pendingUrl = useUrlStore((state) => state.pendingUrl);
   const pendingTaskId = useUrlStore((state) => state.pendingTaskId);
   const hasInitiatedAnalysis = useRef(false);
+
+  const handleDeleteTaskAndRedirect = async (taskIdToDelete: string) => {
+    try {
+      await apiClient.delete(`/api/tasks/delete?task_id=${taskIdToDelete}`);
+      router.push('/dashboard');
+    } catch (deleteError) {
+      console.error(`Failed to delete task ${taskIdToDelete}:`, deleteError);
+      router.push('/dashboard');
+    }
+  };
 
   useEffect(() => {
     console.log('TaskStatusPage useEffect - taskId prop:', taskId);
@@ -39,7 +52,8 @@ export default function TaskStatusClient({ taskId }: TaskStatusClientProps) {
             clearPendingAnalysis(); // Clear pending state after successful initiation
           } catch (error) {
             console.error("Error starting analysis from TaskStatus:", error);
-            // Optionally, handle error state in UI
+            handleDeleteTaskAndRedirect(currentTaskId);
+            toast.error("Error starting analysis. Please try again.");
           }
         };
         startAnalysis();
@@ -52,7 +66,7 @@ export default function TaskStatusClient({ taskId }: TaskStatusClientProps) {
           setUrlEntries(response.data);
         } catch (error) {
           console.error(`Error fetching URL entries for task ${currentTaskId}:`, error);
-          setUrlEntries([]); // Clear entries on error
+          setUrlEntries([]);
         }
       };
       fetchUrlEntriesForTask();
