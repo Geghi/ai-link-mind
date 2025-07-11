@@ -61,5 +61,5 @@ export async function signup(formData: z.infer<typeof signupSchema>) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/task-status");
+  redirect("/dashboard");
 }
