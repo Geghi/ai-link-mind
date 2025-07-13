@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import apiClient from "@/lib/apiClient";
-import { createSupabaseBrowserClient } from '@/services/supabase/client';
-import { ChatMessage, ChatSession } from '@/types';
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import ChatSidebar from '@/components/chat/ChatSidebar';
-import ChatHeader from '@/components/chat/ChatHeader';
-import ChatMessagesDisplay from '@/components/chat/ChatMessagesDisplay';
-import ChatInputArea from '@/components/chat/ChatInputArea';
-import { useRouter } from 'next/navigation';
+import { createSupabaseBrowserClient } from "@/services/supabase/client";
+import { ChatMessage, ChatSession } from "@/types";
+import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import ChatSidebar from "@/components/chat/ChatSidebar";
+import ChatHeader from "@/components/chat/ChatHeader";
+import ChatMessagesDisplay from "@/components/chat/ChatMessagesDisplay";
+import ChatInputArea from "@/components/chat/ChatInputArea";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -29,15 +29,19 @@ export default function ChatPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
-  const [currentChatSessionId, setCurrentChatSessionId] = useState<string | null>(null);
+  const [currentChatSessionId, setCurrentChatSessionId] = useState<
+    string | null
+  >(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [websiteBasename, setWebsiteBasename] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
-  const [sessionIdToDelete, setSessionIdToDelete] = useState<string | null>(null);
+  const [sessionIdToDelete, setSessionIdToDelete] = useState<string | null>(
+    null
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isCreatingSessionRef = useRef(false);
 
@@ -49,7 +53,10 @@ export default function ChatPage() {
     if (!task_id) return;
     setLoading(true);
     try {
-      const response = await apiClient.post<ChatSession>("/api/chat-sessions/create", { task_id: task_id });
+      const response = await apiClient.post<ChatSession>(
+        "/api/chat-sessions/create",
+        { task_id: task_id }
+      );
       const newSession = response.data;
       setChatSessions((prev) => [newSession, ...prev]);
       setCurrentChatSessionId(newSession.id);
@@ -60,7 +67,11 @@ export default function ChatPage() {
       if (navigate) {
         router.push(newUrl);
       } else {
-        window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
+        window.history.replaceState(
+          { ...window.history.state, as: newUrl, url: newUrl },
+          "",
+          newUrl
+        );
       }
     } catch (error) {
       console.error("Error creating new chat session:", error);
@@ -73,9 +84,13 @@ export default function ChatPage() {
   const handleDeleteChat = async (sessionId: string) => {
     setLoading(true);
     try {
-      await apiClient.delete(`/api/chat-sessions/delete`, { data: { sessionId } });
+      await apiClient.delete(`/api/chat-sessions/delete`, {
+        data: { sessionId },
+      });
 
-      setChatSessions((prev) => prev.filter((session) => session.id !== sessionId));
+      setChatSessions((prev) =>
+        prev.filter((session) => session.id !== sessionId)
+      );
 
       if (currentChatSessionId === sessionId) {
         setCurrentChatSessionId(null);
@@ -94,7 +109,7 @@ export default function ChatPage() {
     try {
       await apiClient.delete(`/api/tasks/delete`, { data: { task_id } });
       toast.success("Website and all associated data deleted successfully.");
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (error) {
       console.error("Error deleting task:", error);
       toast.error("Failed to delete website. Please try again.");
@@ -107,25 +122,30 @@ export default function ChatPage() {
     if (!task_id) {
       console.error("No task_id provided in URL parameters.");
       toast.error("Invalid task ID provided. Redirecting to home.");
-      router.push('/');
+      router.push("/");
       return;
     }
 
     const fetchInitialData = async () => {
       setInitialLoading(true);
-      const urlChatSessionId = searchParams.get('chatSessionId');
-      console.log('Fetching initial data for task_id:', task_id, 'with chatSessionId:', urlChatSessionId);
+      const urlChatSessionId = searchParams.get("chatSessionId");
+      console.log(
+        "Fetching initial data for task_id:",
+        task_id,
+        "with chatSessionId:",
+        urlChatSessionId
+      );
 
       const { data: taskData, error: taskError } = await supabase
-        .from('tasks')
-        .select('website_basename')
-        .eq('id', task_id)
+        .from("tasks")
+        .select("website_basename")
+        .eq("id", task_id)
         .single();
 
       if (taskError || !taskData) {
-        console.error('Error fetching task details:', taskError);
+        console.error("Error fetching task details:", taskError);
         toast.error("Failed to load task details. Redirecting to home.");
-        router.push('/');
+        router.push("/");
         setInitialLoading(false);
         return;
       } else {
@@ -134,26 +154,34 @@ export default function ChatPage() {
 
       let sessions: ChatSession[] = [];
       try {
-        const response = await apiClient.get<ChatSession[]>('/api/chat-sessions', { params: {task_id: task_id} }); ;
+        const response = await apiClient.get<ChatSession[]>(
+          "/api/chat-sessions",
+          { params: { task_id: task_id } }
+        );
         sessions = response.data;
         setChatSessions(sessions);
       } catch (error) {
-        console.error('Failed to fetch chat sessions', error);
+        console.error("Failed to fetch chat sessions", error);
         toast.error("Failed to load chat sessions. Redirecting to home.");
-        router.push('/');
+        router.push("/");
         setInitialLoading(false);
         return;
       }
 
-      const sessionExistsInUrl = urlChatSessionId && sessions.some((s: ChatSession) => s.id === urlChatSessionId);
+      const sessionExistsInUrl =
+        urlChatSessionId &&
+        sessions.some((s: ChatSession) => s.id === urlChatSessionId);
 
       if (sessionExistsInUrl) {
-        console.log('Setting current chat session from URL:', urlChatSessionId);
+        console.log("Setting current chat session from URL:", urlChatSessionId);
         setCurrentChatSessionId(urlChatSessionId);
         setInitialLoading(false);
       } else if (sessions && sessions.length > 0) {
         const mostRecentSession = sessions[0];
-        console.log('No valid chat session in URL, redirecting to the most recent one:', mostRecentSession.id);
+        console.log(
+          "No valid chat session in URL, redirecting to the most recent one:",
+          mostRecentSession.id
+        );
         // Only redirect if the current URL doesn't already point to this session
         if (urlChatSessionId !== mostRecentSession.id) {
           router.push(`/chat/${task_id}?chatSessionId=${mostRecentSession.id}`);
@@ -164,7 +192,7 @@ export default function ChatPage() {
       } else {
         if (isCreatingSessionRef.current) return;
 
-        console.log('No existing chat sessions found, creating a new one.');
+        console.log("No existing chat sessions found, creating a new one.");
         isCreatingSessionRef.current = true;
         await handleNewChat(false);
         isCreatingSessionRef.current = false;
@@ -185,21 +213,29 @@ export default function ChatPage() {
     const fetchMessages = async () => {
       setLoading(true);
       const { data: fetchedMessages, error: messagesError } = await supabase
-        .from('chat_messages')
-        .select('*')
-        .eq('chat_session_id', currentChatSessionId)
-        .order('created_at', { ascending: true });
+        .from("chat_messages")
+        .select("*")
+        .eq("chat_session_id", currentChatSessionId)
+        .order("created_at", { ascending: true });
 
       if (messagesError) {
-        console.error('Error fetching messages:', messagesError);
-        setMessages([{ id: 'error-fetch', chat_session_id: currentChatSessionId, sender: 'ai', content: 'Error loading messages.', created_at: new Date().toISOString() }]);
+        console.error("Error fetching messages:", messagesError);
+        setMessages([
+          {
+            id: "error-fetch",
+            chat_session_id: currentChatSessionId,
+            sender: "ai",
+            content: "Error loading messages.",
+            created_at: new Date().toISOString(),
+          },
+        ]);
       } else {
         if (fetchedMessages && fetchedMessages.length > 0) {
           setMessages(fetchedMessages as ChatMessage[]);
         } else {
           setMessages([
             {
-              id: 'welcome-msg',
+              id: "welcome-msg",
               chat_session_id: currentChatSessionId,
               sender: "ai",
               content: `Hello! I'm ready to answer questions about this website. What would you like to know?`,
@@ -216,20 +252,20 @@ export default function ChatPage() {
     const channel = supabase
       .channel(`chat_session_${currentChatSessionId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
+          event: "INSERT",
+          schema: "public",
+          table: "chat_messages",
           filter: `chat_session_id=eq.${currentChatSessionId}`,
         },
         (payload: RealtimePostgresChangesPayload<ChatMessage>) => {
           const newMessage = payload.new as ChatMessage;
-          if (newMessage.sender === 'user') {
+          if (newMessage.sender === "user") {
             return;
           }
           setMessages((prev) => {
-            if (!prev.some(msg => msg.id === newMessage.id)) {
+            if (!prev.some((msg) => msg.id === newMessage.id)) {
               return [...prev, newMessage];
             }
             return prev;
@@ -246,10 +282,11 @@ export default function ChatPage() {
   useEffect(scrollToBottom, [messages]);
 
   const handleSendMessage = async () => {
-    if (input.trim() === "" || loading || !currentChatSessionId || !task_id) return;
+    if (input.trim() === "" || loading || !currentChatSessionId || !task_id)
+      return;
 
     const userMessage: ChatMessage = {
-      id: 'temp-user-msg-' + Date.now(),
+      id: "temp-user-msg-" + Date.now(),
       chat_session_id: currentChatSessionId,
       sender: "user",
       content: input,
@@ -260,13 +297,17 @@ export default function ChatPage() {
     setLoading(true);
 
     try {
-      await apiClient.post("/api/chat", { chat_session_id: currentChatSessionId, task_id: task_id, newMessage: userMessage.content });
+      await apiClient.post("/api/chat", {
+        chat_session_id: currentChatSessionId,
+        task_id: task_id,
+        newMessage: userMessage.content,
+      });
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages((prev) => [
         ...prev,
         {
-          id: 'error-msg-' + Date.now(),
+          id: "error-msg-" + Date.now(),
           chat_session_id: currentChatSessionId,
           sender: "ai",
           content: "Sorry, an error occurred. Please try again.",
@@ -277,7 +318,6 @@ export default function ChatPage() {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="flex w-full bg-background text-foreground font-sans h-full overflow-hidden">
@@ -302,17 +342,22 @@ export default function ChatPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this chat session and all of its messages.
+              This action cannot be undone. This will permanently delete this
+              chat session and all of its messages.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => {
-              if (sessionIdToDelete) {
-                handleDeleteChat(sessionIdToDelete);
-                setIsAlertDialogOpen(false);
-              }
-            }}>Continue</AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => {
+                if (sessionIdToDelete) {
+                  handleDeleteChat(sessionIdToDelete);
+                  setIsAlertDialogOpen(false);
+                }
+              }}
+            >
+              Continue
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
