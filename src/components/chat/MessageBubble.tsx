@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Bot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChatMessage } from "@/types";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export const MessageBubble = ({
   msg,
@@ -46,7 +48,11 @@ export const MessageBubble = ({
             : "bg-card/60 backdrop-blur-sm border border-border/50 text-foreground rounded-bl-none"
         )}
       >
-        <p className="leading-relaxed break-words">{msg.content}</p>
+        <div className="prose dark:prose-invert leading-relaxed break-words">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {msg.content}
+          </ReactMarkdown>
+        </div>
       </div>
     </motion.div>
   );
