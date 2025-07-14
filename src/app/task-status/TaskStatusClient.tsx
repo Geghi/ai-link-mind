@@ -41,11 +41,7 @@ export default function TaskStatusClient({ taskId }: TaskStatusClientProps) {
   };
 
   useEffect(() => {
-    console.log("TaskStatusPage useEffect - taskId prop:", taskId);
-    console.log("TaskStatusPage useEffect - pendingTaskId:", pendingTaskId);
     const currentTaskId = taskId || pendingTaskId; // Determine which task ID to use
-
-    console.log("TaskStatusPage useEffect - currentTaskId:", currentTaskId);
 
     if (currentTaskId) {
       initializeSubscription(currentTaskId); // Always initialize subscription for the current task ID
