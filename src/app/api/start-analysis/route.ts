@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       const response = await apiClient.post(scrapingApiEndpoint, { url, task_id: task_id, user_id: userId });
       return NextResponse.json(response.data);
     } catch (error) {
-    console.error("Error in start-analysis API:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+      console.error("Error in start-analysis API:", error);
+    return NextResponse.json({ error: error || "Internal Server Error" }, { status: 500 });
   }
 }

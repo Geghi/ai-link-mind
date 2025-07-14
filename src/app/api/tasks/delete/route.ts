@@ -16,23 +16,26 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const json = await request.json();
-  const parsed = deleteSchema.safeParse(json);
+  const { searchParams } = new URL(request.url);
+  const task_id = searchParams.get('task_id');
+
+  const parsed = deleteSchema.safeParse({ task_id });
 
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid task_id parameter' }, { status: 400 });
   }
 
-  const { task_id } = parsed.data;
+  const { task_id: validated_task_id } = parsed.data;
 
   try {
     const { error } = await supabase
       .from('tasks')
       .delete()
-      .eq('id', task_id)
+      .eq('id', validated_task_id)
       .eq('user_id', user.id);
 
     if (error) {
+      console.log('Error deleting task id: ', task_id);
       console.error('Error deleting task:', error);
       return NextResponse.json({ error: 'Failed to delete task' }, { status: 500 });
     }
